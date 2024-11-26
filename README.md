@@ -1,4 +1,3 @@
-![Screenshot (110)](https://github.com/user-attachments/assets/6b770036-3e40-4a38-b084-7c6879f41798)
 # Complaint Analysis System with IPC Section Matching
 
 ## Overview
@@ -156,3 +155,5 @@ This system provides an automated way to analyze complaints and match them with 
 - **Extend IPC Knowledge Base**: Add more IPC sections and their associated keywords to expand the coverage.
 - **Contextual Understanding**: Integrate more advanced NLP models for better understanding of the complaint context.
 - **GUI Integration**: Build a user-friendly graphical interface for easier interaction with the system.
+
+![Screenshot (110)](https://github.com/user-attachments/assets/6b770036-3e40-4a38-b084-7c6879f41798)
