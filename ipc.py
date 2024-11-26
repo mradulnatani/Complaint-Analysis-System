@@ -8,15 +8,13 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import nltk
 
-# Download NLTK resources if not already available
 nltk.download('stopwords')
 nltk.download('wordnet')
 
-# Initialize Lemmatizer and Stopwords
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
-# Step 1: Knowledge Base (IPC Sections with Keywords)
+# Knowledge Base
 ipc_sections = [
     {"section": "320B", "keywords": "grievous hurt injuries serious harm damage injury"},
     {"section": "506", "keywords": "threaten kill harm death violence abuse"},
@@ -31,21 +29,21 @@ ipc_sections = [
     {"section": "302", "keywords": "murder homicide kill"}
 ]
 
-# Step 2: Text Preprocessing - Remove stopwords, Lemmatize, and Combine keywords
+# Text Preprocessing 
 def preprocess_text(text):
-    text = text.lower()  # Lowercase text
-    words = text.split()  # Split text into words
-    words = [lemmatizer.lemmatize(word) for word in words if word not in stop_words]  # Lemmatize and remove stopwords
+    text = text.lower()  
+    words = text.split()  
+    words = [lemmatizer.lemmatize(word) for word in words if word not in stop_words] 
     return " ".join(words)
 
 # Preprocess the keywords
 processed_ipc_keywords = [preprocess_text(ipc["keywords"]) for ipc in ipc_sections]
 
-# Step 3: Convert Knowledge Base to TF-IDF Vectors
-vectorizer = TfidfVectorizer(ngram_range=(1, 2))  # Use bigrams for better context understanding
+# Convert Knowledge Base to TF-IDF Vectors
+vectorizer = TfidfVectorizer(ngram_range=(1, 2))  
 ipc_vectors = vectorizer.fit_transform(processed_ipc_keywords)
 
-# Step 4: Define fuzzy variables for similarity score
+# Define fuzzy variables for similarity score
 score = ctrl.Antecedent(np.arange(0, 1.1, 0.1), "score")
 membership = ctrl.Consequent(np.arange(0, 1.1, 0.1), "membership")
 
@@ -65,7 +63,7 @@ rule3 = ctrl.Rule(score["high"], membership["applicable"])
 membership_ctrl = ctrl.ControlSystem([rule1, rule2, rule3])
 membership_simulation = ctrl.ControlSystemSimulation(membership_ctrl)
 
-# Step 5: Function to analyze a complaint
+# Function to analyze a complaint
 def analyze_complaint(complaint_text):
     # Preprocess the input complaint
     processed_complaint = preprocess_text(complaint_text)
@@ -79,15 +77,15 @@ def analyze_complaint(complaint_text):
     applicable_sections = []
     similarity_list = []
     for section_idx, score_value in enumerate(similarity_scores):
-        # Use similarity score directly in fuzzy input
+# Use similarity score directly in fuzzy input
         membership_simulation.input["score"] = score_value
         membership_simulation.compute()
         fuzzy_value = membership_simulation.output["membership"]
 
-        # Debugging: Print fuzzy values
+# Debugging: Print fuzzy values
         print(f"Section {ipc_sections[section_idx]['section']}: Similarity={score_value:.4f}, Fuzzy={fuzzy_value:.4f}")
 
-        # Adjust threshold to include more relevant sections
+# Adjust threshold to include more relevant sections
         if fuzzy_value > 0.1:  # Threshold to consider as applicable
             applicable_sections.append((ipc_sections[section_idx]["section"], fuzzy_value))
             similarity_list.append(
