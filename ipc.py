@@ -42,7 +42,7 @@ def preprocess_text(text):
 processed_ipc_keywords = [preprocess_text(ipc["keywords"]) for ipc in ipc_sections]
 
 # Step 3: Convert Knowledge Base to TF-IDF Vectors
-vectorizer = TfidfVectorizer()
+vectorizer = TfidfVectorizer(ngram_range=(1, 2))  # Use bigrams for better context understanding
 ipc_vectors = vectorizer.fit_transform(processed_ipc_keywords)
 
 # Step 4: Define fuzzy variables for similarity score
@@ -50,11 +50,11 @@ score = ctrl.Antecedent(np.arange(0, 1.1, 0.1), "score")
 membership = ctrl.Consequent(np.arange(0, 1.1, 0.1), "membership")
 
 # Membership functions
-score["low"] = fuzz.trimf(score.universe, [0, 0, 0.2])
-score["medium"] = fuzz.trimf(score.universe, [0, 0.2, 0.5])
-score["high"] = fuzz.trimf(score.universe, [0.5, 1, 1])
-membership["not_applicable"] = fuzz.trimf(membership.universe, [0, 0, 0.5])
-membership["applicable"] = fuzz.trimf(membership.universe, [0.5, 1, 1])
+score["low"] = fuzz.trimf(score.universe, [0, 0, 0.3])
+score["medium"] = fuzz.trimf(score.universe, [0.2, 0.5, 0.8])
+score["high"] = fuzz.trimf(score.universe, [0.7, 1, 1])
+membership["not_applicable"] = fuzz.trimf(membership.universe, [0, 0, 0.4])
+membership["applicable"] = fuzz.trimf(membership.universe, [0.3, 0.7, 1])
 
 # Fuzzy rules
 rule1 = ctrl.Rule(score["low"], membership["not_applicable"])
@@ -70,29 +70,37 @@ def analyze_complaint(complaint_text):
     # Preprocess the input complaint
     processed_complaint = preprocess_text(complaint_text)
     complaint_vector = vectorizer.transform([processed_complaint])
-    
+
     # Compute similarity scores
     similarity_scores = cosine_similarity(complaint_vector, ipc_vectors)[0]
-    
-    # Calculate fuzzy membership for each IPC section
+
+    # Debugging: Print similarity scores
+    print("Similarity Scores:", similarity_scores)
+
     applicable_sections = []
     similarity_list = []
     for section_idx, score_value in enumerate(similarity_scores):
+        # Use similarity score directly in fuzzy input
         membership_simulation.input["score"] = score_value
-        
-        try:
-            membership_simulation.compute()  # Compute the fuzzy output
-            fuzzy_value = membership_simulation.output.get("membership", 0)
-        except KeyError as e:
-            print(f"Error in fuzzy computation: {e}")
-            fuzzy_value = 0
-        
-        if fuzzy_value > 0.1:  # Adjust threshold if needed
+        membership_simulation.compute()
+        fuzzy_value = membership_simulation.output["membership"]
+
+        # Debugging: Print fuzzy values
+        print(f"Section {ipc_sections[section_idx]['section']}: Similarity={score_value:.4f}, Fuzzy={fuzzy_value:.4f}")
+
+        # Adjust threshold to include more relevant sections
+        if fuzzy_value > 0.1:  # Threshold to consider as applicable
             applicable_sections.append((ipc_sections[section_idx]["section"], fuzzy_value))
             similarity_list.append(
                 f"IPC {ipc_sections[section_idx]['section']} - Score: {score_value:.4f}, Fuzzy: {fuzzy_value:.4f}"
             )
-    
+
+    # Check if no sections are applicable
+    if not applicable_sections:
+        print("No IPC sections matched based on the current thresholds.")
+    else:
+        print(f"Applicable sections: {[sec[0] for sec in applicable_sections]}")
+
     return {
         "complaint": complaint_text,
         "applicable_sections": applicable_sections,
