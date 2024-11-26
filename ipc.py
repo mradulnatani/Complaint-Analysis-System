@@ -16,7 +16,7 @@ nltk.download('wordnet')
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
-# Step 1: Expanded Knowledge Base (IPC Sections with Keywords)
+# Step 1: Knowledge Base (IPC Sections with Keywords)
 ipc_sections = [
     {"section": "320B", "keywords": "grievous hurt injuries serious harm damage injury"},
     {"section": "506", "keywords": "threaten kill harm death violence abuse"},
@@ -71,10 +71,9 @@ def analyze_complaint(complaint_text):
     processed_complaint = preprocess_text(complaint_text)
     complaint_vector = vectorizer.transform([processed_complaint])
 
-    # Compute similarity scores
     similarity_scores = cosine_similarity(complaint_vector, ipc_vectors)[0]
 
-    # Debugging: Print similarity scores
+
     print("Similarity Scores:", similarity_scores)
 
     applicable_sections = []
@@ -95,7 +94,6 @@ def analyze_complaint(complaint_text):
                 f"IPC {ipc_sections[section_idx]['section']} - Score: {score_value:.4f}, Fuzzy: {fuzzy_value:.4f}"
             )
 
-    # Check if no sections are applicable
     if not applicable_sections:
         print("No IPC sections matched based on the current thresholds.")
     else:
@@ -107,12 +105,10 @@ def analyze_complaint(complaint_text):
         "details": similarity_list,
     }
 
-# Main program
 if __name__ == "__main__":
     complaint_input = input("Enter the complaint: ")
     results = analyze_complaint(complaint_input)
     
-    # Display results
     print("\nComplaint Analysis Results:")
     print(f"Complaint: {results['complaint']}")
     print("\nApplicable IPC Sections:")
