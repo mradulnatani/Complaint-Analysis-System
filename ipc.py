@@ -28,25 +28,24 @@ ipc_sections = [
     {"section": "420", "keywords": "fraud cheating financial scam"},
     {"section": "307", "keywords": "attempted murder harm attack"},
     {"section": "454", "keywords": "burglary break-in trespassing theft"},
-    {"section": "302", "keywords": "murder homicide kill"},
-    # Add more sections as needed...
+    {"section": "302", "keywords": "murder homicide kill"}
 ]
 
-# Step 2: Preprocess Text Function
+# Step 2: Text Preprocessing - Remove stopwords, Lemmatize, and Combine keywords
 def preprocess_text(text):
     text = text.lower()  # Lowercase text
     words = text.split()  # Split text into words
     words = [lemmatizer.lemmatize(word) for word in words if word not in stop_words]  # Lemmatize and remove stopwords
     return " ".join(words)
 
-# Preprocess the keywords for IPC sections
+# Preprocess the keywords
 processed_ipc_keywords = [preprocess_text(ipc["keywords"]) for ipc in ipc_sections]
 
-# Step 3: TF-IDF Vectorizer Setup
+# Step 3: Convert Knowledge Base to TF-IDF Vectors
 vectorizer = TfidfVectorizer()
-tfidf_matrix = vectorizer.fit_transform(processed_ipc_keywords)  # Fit on IPC sections only
+ipc_vectors = vectorizer.fit_transform(processed_ipc_keywords)
 
-# Step 4: Fuzzification Setup
+# Step 4: Define fuzzy variables for similarity score
 score = ctrl.Antecedent(np.arange(0, 1.1, 0.1), "score")
 membership = ctrl.Consequent(np.arange(0, 1.1, 0.1), "membership")
 
@@ -66,108 +65,51 @@ rule3 = ctrl.Rule(score["high"], membership["applicable"])
 membership_ctrl = ctrl.ControlSystem([rule1, rule2, rule3])
 membership_simulation = ctrl.ControlSystemSimulation(membership_ctrl)
 
-# Step 5: Analyze Complaint
-def analyze_complaint(complaint):
-    # Preprocess the complaint
-    processed_complaint = preprocess_text(complaint)
-    
-    # Vectorize the complaint
+# Step 5: Function to analyze a complaint
+def analyze_complaint(complaint_text):
+    # Preprocess the input complaint
+    processed_complaint = preprocess_text(complaint_text)
     complaint_vector = vectorizer.transform([processed_complaint])
     
     # Compute similarity scores
-    similarity_scores = cosine_similarity(complaint_vector, tfidf_matrix).flatten()
+    similarity_scores = cosine_similarity(complaint_vector, ipc_vectors)[0]
     
-    # Calculate fuzzy membership values and gather applicable IPC sections
+    # Calculate fuzzy membership for each IPC section
     applicable_sections = []
-    for idx, score_value in enumerate(similarity_scores):
+    similarity_list = []
+    for section_idx, score_value in enumerate(similarity_scores):
         membership_simulation.input["score"] = score_value
-        membership_simulation.compute()
-        fuzzy_value = membership_simulation.output["membership"]
-        if fuzzy_value > 0.1:  # Threshold for considering the section
-            applicable_sections.append({
-                "section": ipc_sections[idx]["section"],
-                "similarity": round(score_value, 4),
-                "fuzzy_score": round(fuzzy_value, 4),
-            })
+        
+        try:
+            membership_simulation.compute()  # Compute the fuzzy output
+            fuzzy_value = membership_simulation.output.get("membership", 0)
+        except KeyError as e:
+            print(f"Error in fuzzy computation: {e}")
+            fuzzy_value = 0
+        
+        if fuzzy_value > 0.1:  # Adjust threshold if needed
+            applicable_sections.append((ipc_sections[section_idx]["section"], fuzzy_value))
+            similarity_list.append(
+                f"IPC {ipc_sections[section_idx]['section']} - Score: {score_value:.4f}, Fuzzy: {fuzzy_value:.4f}"
+            )
     
-    # Sort by fuzzy membership score in descending order
-    applicable_sections = sorted(applicable_sections, key=lambda x: x["fuzzy_score"], reverse=True)
-    return applicable_sections
+    return {
+        "complaint": complaint_text,
+        "applicable_sections": applicable_sections,
+        "details": similarity_list,
+    }
 
-# Step 6: Generate HTML Report
-def generate_html_report(complaint, analysis_results):
-    html_content = f"""
-    <html>
-    <head>
-        <title>Complaint Analysis</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                background-color: #f9f9f9;
-                color: #333;
-            }}
-            h1 {{
-                text-align: center;
-                color: #003366;
-            }}
-            table {{
-                width: 80%;
-                margin: 20px auto;
-                border-collapse: collapse;
-            }}
-            th, td {{
-                border: 1px solid #ddd;
-                padding: 8px;
-            }}
-            th {{
-                background-color: #003366;
-                color: white;
-                text-align: center;
-            }}
-            tr:nth-child(even) {{
-                background-color: #f2f2f2;
-            }}
-        </style>
-    </head>
-    <body>
-        <h1>Complaint Analysis</h1>
-        <p><strong>Complaint:</strong> {complaint}</p>
-        <table>
-            <tr>
-                <th>IPC Section</th>
-                <th>Similarity Score</th>
-                <th>Fuzzy Membership</th>
-            </tr>
-    """
-    for result in analysis_results:
-        html_content += f"""
-            <tr>
-                <td>{result['section']}</td>
-                <td>{result['similarity']}</td>
-                <td>{result['fuzzy_score']}</td>
-            </tr>
-        """
-    html_content += """
-        </table>
-    </body>
-    </html>
-    """
-    # Save to file
-    with open("complaint_analysis.html", "w") as file:
-        file.write(html_content)
-    print("HTML report generated successfully!")
-
-# Step 7: Take Complaint as Input and Analyze
-complaint_input = input("Enter the complaint: ")
-results = analyze_complaint(complaint_input)
-
-# Generate HTML Report
-generate_html_report(complaint_input, results)
-
-# Display results in the console
-if results:
-    print("Applicable IPC Sections:")
-    for res in results:
-        print(f"IPC {res['section']}: Similarity={res['similarity']}, Fuzzy Score={res['fuzzy_score']}")
-else:
-    print("No applicable IPC sections found.")
+# Main program
+if __name__ == "__main__":
+    complaint_input = input("Enter the complaint: ")
+    results = analyze_complaint(complaint_input)
+    
+    # Display results
+    print("\nComplaint Analysis Results:")
+    print(f"Complaint: {results['complaint']}")
+    print("\nApplicable IPC Sections:")
+    for section, fuzzy_value in results["applicable_sections"]:
+        print(f"  - IPC Section {section}: Fuzzy Score = {fuzzy_value:.4f}")
+    print("\nDetails:")
+    for detail in results["details"]:
+        print(f"  {detail}")
