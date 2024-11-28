@@ -95,7 +95,7 @@ membership["applicable"] = fuzz.trimf(membership.universe, [0.3, 0.7, 1])
 
 # Fuzzy rules
 rule1 = ctrl.Rule(score["low"], membership["not_applicable"])
-rule2 = ctrl.Rule(score["medium"], membership["not_applicable"])
+rule2 = ctrl.Rule(score["medium"], membership["applicable"])
 rule3 = ctrl.Rule(score["high"], membership["applicable"])
 
 # Create control system
