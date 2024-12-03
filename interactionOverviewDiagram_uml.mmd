@@ -1,0 +1,18 @@
+flowchart TD
+    A[Start] --> B{Input Validation}
+    B -->|Valid| C[Preprocess Text]
+    B -->|Invalid| H[Error Handling]
+    
+    C --> D[Vectorize Complaint]
+    D --> E[Calculate Similarity]
+    
+    E --> F{Similarity Threshold}
+    F -->|High Match| G[Apply Fuzzy Logic]
+    F -->|Low Match| I[No Applicable Sections]
+    
+    G --> J[Identify IPC Sections]
+    J --> K[Generate Report]
+    K --> L[End]
+    
+    I --> L
+    H --> L
