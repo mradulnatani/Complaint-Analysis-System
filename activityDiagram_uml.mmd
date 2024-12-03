@@ -1,0 +1,11 @@
+flowchart TD
+    A[Start] --> B[Input Complaint Text]
+    B --> C[Preprocess Text]
+    C --> D[Convert to TF-IDF Vector]
+    D --> E{Similarity Scores > Threshold?}
+    E -->|Yes| F[Apply Fuzzy Logic]
+    E -->|No| G[No Applicable Sections]
+    F --> H[Identify Applicable IPC Sections]
+    H --> I[Generate Report]
+    I --> J[End]
+    G --> J
