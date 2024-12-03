@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant User
+    participant Preprocessor
+    participant Vectorizer
+    participant FuzzySystem
+    participant Analyzer
+    
+    User->>Preprocessor: Input complaint text
+    Preprocessor-->>Analyzer: Processed text
+    Analyzer->>Vectorizer: Transform text to vector
+    Vectorizer-->>Analyzer: Complaint vector
+    Analyzer->>Vectorizer: Calculate cosine similarity
+    Vectorizer-->>Analyzer: Similarity scores
+    Analyzer->>FuzzySystem: Input similarity scores
+    FuzzySystem-->>Analyzer: Fuzzy membership values
+    Analyzer-->>User: Applicable IPC Sections
