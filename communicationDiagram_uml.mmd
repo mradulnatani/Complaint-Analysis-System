@@ -1,0 +1,8 @@
+flowchart TB
+    User --1--> Preprocessor
+    Preprocessor --2--> Vectorizer
+    Vectorizer --3--> SimilarityCalculator
+    SimilarityCalculator --4--> FuzzySystem
+    FuzzySystem --5--> SectionIdentifier
+    SectionIdentifier --6--> ReportGenerator
+    ReportGenerator --7--> User
