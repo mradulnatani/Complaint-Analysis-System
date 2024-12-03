@@ -1,0 +1,13 @@
+flowchart TB
+    subgraph Components
+        TextPreprocessor[Text Preprocessor]
+        VectorizationEngine[Vectorization Engine]
+        SimilarityCalculator[Similarity Calculator]
+        FuzzyLogicSystem[Fuzzy Logic System]
+        ReportGenerator[Report Generator]
+    end
+    
+    TextPreprocessor --> VectorizationEngine
+    VectorizationEngine --> SimilarityCalculator
+    SimilarityCalculator --> FuzzyLogicSystem
+    FuzzyLogicSystem --> ReportGenerator
