@@ -1,0 +1,9 @@
+stateDiagram-v2
+    [*] --> InputReceived: Complaint Text
+    InputReceived --> Preprocessing: Normalize Text
+    Preprocessing --> Vectorization: Convert to Vector
+    Vectorization --> SimilarityCalculation: Compute Cosine Similarity
+    SimilarityCalculation --> FuzzyLogicApplication: Determine Membership
+    FuzzyLogicApplication --> SectionIdentification: Select Applicable Sections
+    SectionIdentification --> ReportGeneration: Create Analysis
+    ReportGeneration --> [*]: Complete Analysis

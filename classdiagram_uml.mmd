@@ -1,0 +1,21 @@
+classDiagram
+    class ComplaintAnalyzer {
+        +preprocess_text(text: str): str
+        +analyze_complaint(complaint_text: str): dict
+        -vectorizer: TfidfVectorizer
+        -ipc_vectors: Matrix
+    }
+    
+    class IPCSection {
+        +section: str
+        +keywords: str
+    }
+    
+    class FuzzyMembershipSystem {
+        +initialize_variables()
+        +create_rules()
+        +compute_membership(score: float): float
+    }
+    
+    ComplaintAnalyzer --> IPCSection: uses
+    ComplaintAnalyzer --> FuzzyMembershipSystem: uses

@@ -1,0 +1,21 @@
+flowchart TB
+    subgraph Preprocessing
+        TextNormalization[Text Normalization]
+        Lemmatization[Lemmatization]
+        StopwordRemoval[Stopword Removal]
+    end
+    
+    subgraph VectorRepresentation
+        TfidfConversion[TF-IDF Vectorization]
+        CosineSimilarity[Cosine Similarity]
+    end
+    
+    subgraph FuzzyLogic
+        MembershipFunctions[Membership Functions]
+        FuzzyRules[Fuzzy Inference Rules]
+    end
+    
+    subgraph Reporting
+        SectionMapping[IPC Section Mapping]
+        AnalysisGeneration[Analysis Report]
+    end

@@ -1,0 +1,21 @@
+flowchart TB
+    subgraph Client
+        UserInterface[User Interface]
+    end
+    
+    subgraph Application Server
+        WebApp[Web Application]
+        AnalysisEngine[Complaint Analysis Engine]
+        DatabaseServer[IPC Sections Database]
+    end
+    
+    subgraph Cloud Infrastructure
+        ComputeResources[Compute Resources]
+        StorageResources[Storage Resources]
+    end
+    
+    UserInterface --> WebApp
+    WebApp --> AnalysisEngine
+    AnalysisEngine --> DatabaseServer
+    AnalysisEngine --> ComputeResources
+    DatabaseServer --> StorageResources
