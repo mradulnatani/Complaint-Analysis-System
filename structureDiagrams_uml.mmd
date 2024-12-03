@@ -1,0 +1,14 @@
+flowchart TB
+    ComplaintAnalyzer --> TextPreprocessor
+    ComplaintAnalyzer --> VectorizationEngine
+    ComplaintAnalyzer --> SimilarityCalculator
+    ComplaintAnalyzer --> FuzzyLogicSystem
+    
+    TextPreprocessor --> Lemmatizer
+    TextPreprocessor --> StopwordRemover
+    
+    VectorizationEngine --> TFIDFConverter
+    SimilarityCalculator --> CosineSimilarity
+    
+    FuzzyLogicSystem --> MembershipFunctions
+    FuzzyLogicSystem --> InferenceRules
